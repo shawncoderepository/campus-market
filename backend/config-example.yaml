@@ -1,0 +1,155 @@
+# Orbai FastAPI 项目完整配置示例。
+#
+# 首次运行前复制本文件：
+#   cp config-example.yaml config.yaml
+#
+# 环境变量占位符格式：${环境变量名:默认值}
+# 例如 ${MYSQL_HOST:localhost} 表示优先读取 MYSQL_HOST，未设置时使用 localhost。
+# 项目不会自动读取 .env 文件，环境变量需由 Shell、IDE、容器或部署平台注入。
+
+# 是否开启 FastAPI 调试模式；生产环境必须设置为 false。
+debug_mode: true
+
+# 项目名称，会显示在 OpenAPI 文档、日志和健康检查响应中。
+project_name: orbai-fastapi-template
+
+# 当前应用版本，会显示在 OpenAPI 文档和版本接口中。
+version: 0.1.0
+
+# 所有业务和系统 API 的统一路由前缀，必须以 / 开头。
+prefix: /api
+
+# 应用密钥，可用于签名、加密等场景；生产环境必须通过环境变量提供高强度随机值。
+secret_key: ${APP_SECRET_KEY:change-me-in-production}
+
+# Uvicorn 服务监听配置。
+server:
+  # 监听地址；0.0.0.0 表示监听所有网络接口，127.0.0.1 表示仅允许本机访问。
+  host: 0.0.0.0
+
+  # 服务监听端口，必须是 1 到 65535 之间的整数。
+  port: 8000
+
+  # 是否监控代码变化并自动重启；适合本地开发，生产环境必须关闭。
+  reload: true
+
+# 跨域资源共享配置，对应 FastAPI CORSMiddleware。
+cors:
+  # 允许访问接口的前端来源列表。
+  # 开发环境可使用 "*"；生产环境建议填写明确域名，例如 https://example.com。
+  allow_origins:
+    - "*"
+
+  # 是否允许跨域请求携带 Cookie、Authorization 等凭据。
+  # 当该值为 true 时，allow_origins 不应使用 "*"。
+  allow_credentials: false
+
+  # 允许的 HTTP 方法列表；"*" 表示允许全部方法。
+  allow_methods:
+    - "*"
+
+  # 允许前端发送的请求头列表；"*" 表示允许全部请求头。
+  allow_headers:
+    - "*"
+
+# OpenAPI 接口文档配置。
+doc:
+  # Swagger UI 相对路径，最终地址为 prefix + docs_url。
+  docs_url: /docs
+
+  # 是否启用 Swagger UI；生产环境可根据安全要求关闭。
+  enable_docs: true
+
+  # ReDoc 相对路径，最终地址为 prefix + redoc_url。
+  redoc_url: /redoc
+
+  # 是否启用 ReDoc；生产环境可根据安全要求关闭。
+  enable_redoc: true
+
+# 应用日志配置。
+log:
+  # 日志级别，可选 DEBUG、INFO、WARNING、ERROR、CRITICAL。
+  level: ${LOG_LEVEL:INFO}
+
+# Tortoise ORM 数据库配置。
+database:
+  # 是否启用数据库；false 时应用启动和关闭阶段都不会连接数据库。
+  enabled: false
+
+  # 数据库后端，可选 mysql 或 sqlite。
+  backend: mysql
+
+  # MySQL 主机地址；仅 backend 为 mysql 时生效。
+  host: ${MYSQL_HOST:localhost}
+
+  # MySQL 端口；仅 backend 为 mysql 时生效。
+  port: ${MYSQL_PORT:3306}
+
+  # MySQL 用户名；仅 backend 为 mysql 时生效。
+  user: ${MYSQL_USER:root}
+
+  # MySQL 密码；建议始终通过环境变量注入，不要写入真实配置文件。
+  password: ${MYSQL_PASSWORD:}
+
+  # MySQL 数据库名称；数据库需提前创建。
+  name: ${MYSQL_DATABASE:orbai_template}
+
+  # MySQL 连接字符集，通常保持 utf8mb4。
+  charset: utf8mb4
+
+  # MySQL 连接池最小连接数，必须大于等于 1。
+  minsize: ${MYSQL_MINSIZE:1}
+
+  # MySQL 连接池最大连接数，必须大于等于 minsize。
+  maxsize: ${MYSQL_MAXSIZE:10}
+
+  # 是否输出 Tortoise 数据库调试日志；排查 SQL 时开启，生产环境建议关闭。
+  echo: false
+
+  # 是否在启动时自动创建缺失的数据表。
+  # 仅建议本地开发或测试使用，生产环境应关闭并使用数据库迁移工具。
+  auto_generate_schema: false
+
+  # SQLite 文件路径；仅 backend 为 sqlite 时生效。
+  # 可使用 :memory: 创建仅用于测试的内存数据库。
+  sqlite_path: data/app.sqlite3
+
+  # 是否使用带时区的 datetime；修改前需确认数据库和业务时间约定。
+  use_tz: false
+
+  # Tortoise ORM 默认时区。
+  timezone: Asia/Shanghai
+
+# Redis 缓存和分布式锁配置。
+redis:
+  # 是否启用 Redis；false 时不会建立 Redis 连接。
+  enabled: false
+
+  # Redis 连接失败时是否终止应用启动。
+  # false 表示记录警告后继续启动，true 表示连接失败即启动失败。
+  fail_fast: false
+
+  # Redis 主机地址。
+  host: ${REDIS_HOST:localhost}
+
+  # Redis 服务端口。
+  port: ${REDIS_PORT:6379}
+
+  # Redis 密码；未设置密码时保持空字符串。
+  password: ${REDIS_PASSWORD:}
+
+  # Redis 逻辑数据库编号，通常为 0 到 15，实际范围取决于服务端配置。
+  db: ${REDIS_DB:0}
+
+  # Redis 客户端连接池最大连接数。
+  max_connections: ${REDIS_MAX_CONNECTIONS:20}
+
+  # 建立 Redis TCP 连接的超时时间，单位为秒。
+  socket_connect_timeout: 3.0
+
+  # Redis 命令读写超时时间，单位为秒。
+  socket_timeout: 3.0
+
+  # Redis 键统一前缀，用于隔离不同项目或不同环境的数据。
+  # 例如 key_prefix 为 orbai 时，业务键 widget:1 实际存储为 orbai:widget:1。
+  key_prefix: ${REDIS_KEY_PREFIX:orbai}

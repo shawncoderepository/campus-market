@@ -1,0 +1,22 @@
+# 依赖与构建产物
+node_modules/
+dist/
+.venv/
+__pycache__/
+*.pyc
+
+# 本地配置（含密钥，禁止提交）
+backend/config.yaml
+backend/config-test.yaml
+.env.development
+.env.production
+
+# 上传文件与数据
+backend/uploads/
+backend/data/
+
+# 编辑器/系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
