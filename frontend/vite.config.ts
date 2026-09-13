@@ -15,12 +15,14 @@ export default defineConfig(({ mode }) => {
     base: env.VITE_ROUTE_BASE || '/',
     server: {
       host: true,
-      port: 5173,
+      port: 5174,
       strictPort: true,
+      // 放行内网穿透/临时隧道域名（Cloudflare quick tunnel 等），否则外网访问被 Vite 拦为 403。
+      allowedHosts: ['.trycloudflare.com', 'localhost'],
       // 代理到本地 FastAPI 后端；/uploads 为商品图片等静态资源。
       proxy: {
-        '/api': { target: 'http://localhost:8000', changeOrigin: true },
-        '/uploads': { target: 'http://localhost:8000', changeOrigin: true },
+        '/api': { target: 'http://localhost:8001', changeOrigin: true },
+        '/uploads': { target: 'http://localhost:8001', changeOrigin: true },
       },
     },
     build: { outDir: 'dist', emptyOutDir: true },

@@ -1,7 +1,7 @@
 """校园二手交易与智能议价助手 - 一键启动脚本。
 
 用法（在项目根目录执行）：
-    python start.py                # 同时启动后端(8000)和前端(5173)
+    python start.py                # 同时启动后端(8001)和前端(5174)
     python start.py --backend      # 只启动后端
     python start.py --frontend     # 只启动前端
     python start.py --seed         # 启动前先在后端执行种子数据脚本
@@ -11,11 +11,15 @@
     - Node.js >= 24.18，前端依赖用 npm 管理（首次会自动 npm install）
     - 本机 MySQL 已建库 campus_market（root/123456，可在 backend/config.yaml 修改）
 
+特性：
+    - 自动检测并清理端口占用（如有旧进程占用 8001/5174 会先杀掉再启动）
+
 按 Ctrl+C 可同时停止前后端两个服务。
 """
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import signal
 import subprocess
@@ -27,8 +31,8 @@ ROOT = Path(__file__).resolve().parent
 BACKEND_DIR = ROOT / "backend"
 FRONTEND_DIR = ROOT / "frontend"
 
-BACKEND_PORT = 8000
-FRONTEND_PORT = 5173
+BACKEND_PORT = 8001
+FRONTEND_PORT = 5174
 
 # 子进程列表，便于统一收尾
 _processes: list[subprocess.Popen] = []
@@ -77,7 +81,63 @@ def run_seed() -> None:
         subprocess.run([sys.executable, "scripts/seed.py"], cwd=BACKEND_DIR, check=False)
 
 
+# ==================== 端口占用检测与清理 ====================
+
+def find_pid_by_port(port: int) -> int | None:
+    """查找占用指定端口的进程 PID。仅支持 Windows。"""
+    try:
+        result = subprocess.run(
+            ["netstat", "-ano"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        for line in result.stdout.splitlines():
+            if f":{port}" in line and "LISTENING" in line:
+                parts = line.split()
+                if len(parts) >= 5:
+                    return int(parts[-1])
+    except Exception:  # noqa: BLE001
+        pass
+    return None
+
+
+def kill_process(pid: int) -> bool:
+    """强制结束指定 PID 的进程。"""
+    try:
+        subprocess.run(
+            ["taskkill", "/F", "/PID", str(pid)],
+            capture_output=True,
+            timeout=10,
+        )
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def ensure_port_free(port: int, service_name: str) -> None:
+    """确保端口未被占用，如有占用则杀掉旧进程。"""
+    pid = find_pid_by_port(port)
+    if pid is None:
+        return
+
+    log(f"检测到端口 {port} 被进程 {pid} 占用，正在清理...")
+    if kill_process(pid):
+        # 等待端口真正释放
+        for _ in range(10):
+            time.sleep(0.5)
+            if find_pid_by_port(port) is None:
+                log(f"端口 {port} 已释放（原进程 {pid} 已终止）")
+                return
+        log(f"警告：端口 {port} 可能仍被占用，请手动检查")
+    else:
+        log(f"警告：无法终止进程 {pid}，{service_name} 可能启动失败")
+
+
+# ==================== 启动服务 ====================
+
 def start_backend() -> subprocess.Popen:
+    ensure_port_free(BACKEND_PORT, "后端")
     log(f"启动后端 http://127.0.0.1:{BACKEND_PORT} ...")
     if shutil.which("uv"):
         cmd = ["uv", "run", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", str(BACKEND_PORT)]
@@ -93,6 +153,7 @@ def start_backend() -> subprocess.Popen:
 
 
 def start_frontend() -> subprocess.Popen:
+    ensure_port_free(FRONTEND_PORT, "前端")
     log(f"启动前端 http://localhost:{FRONTEND_PORT} ...")
     # npm 需 shell=True（Windows）
     proc = subprocess.Popen(f"{_npm_cmd()} run dev", cwd=FRONTEND_DIR, shell=True)
@@ -140,7 +201,7 @@ def main() -> None:
         ensure_frontend_deps()
         start_frontend()
 
-    log("服务已启动。后端 http://127.0.0.1:8000/api/docs ，前台 http://localhost:5173 ，后台 http://localhost:5173/admin")
+    log(f"服务已启动。后端 http://127.0.0.1:{BACKEND_PORT}/api/docs ，前台 http://localhost:{FRONTEND_PORT} ，后台 http://localhost:{FRONTEND_PORT}/admin")
     log("按 Ctrl+C 停止全部服务。")
 
     def _handle_signal(signum, frame):  # noqa: ARG001

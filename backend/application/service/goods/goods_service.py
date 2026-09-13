@@ -43,8 +43,10 @@ async def publish(seller: User, data: dict) -> Product:
     return product
 
 
-async def list_goods(query: dict) -> tuple[list[Product], int]:
+async def list_goods(query: dict, viewer: User | None = None) -> tuple[list[Product], int]:
     cond = Q(status=1)  # 只展示在售
+    if viewer is not None:
+        cond &= ~Q(seller_id=viewer.id)  # 不展示自己发布的商品
     if query.get("keyword"):
         kw = query["keyword"]
         cond &= Q(title__icontains=kw) | Q(description__icontains=kw)

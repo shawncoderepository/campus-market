@@ -3,19 +3,57 @@
 @tailwind utilities;
 
 :root {
+  /* 全局主题令牌：暖橙主色 + 米白背景，校园二手交易风格 */
+  --brand: #ff6a00;
+  --brand-dark: #e65c00;
+  --brand-light: #ff8a3d;
+  --brand-gradient: linear-gradient(135deg, #ff8a3d 0%, #ff6a00 100%);
+  --brand-soft: #fff1e6;
+  --bg: #faf7f2;
+  --ink: #2b2622;
+  --ink-soft: #8a8078;
+  --ink-faint: #c9c2ba;
+  --radius: 14px;
+  --shadow-card: 0 2px 12px rgba(43, 38, 34, 0.06);
+  --shadow-card-hover: 0 12px 32px rgba(255, 106, 0, 0.14);
+
   font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
-  color: #172033;
-  background: #f5f7fb;
+  color: var(--ink);
+  background: var(--bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
 
 * { box-sizing: border-box; }
 html, body, #app { min-width: 320px; min-height: 100%; margin: 0; }
-html, body { background: #f5f7fb; }
+html, body { background: var(--bg); }
 body { min-height: 100vh; }
 a { color: inherit; text-decoration: none; }
 
 /* 页面通用容器，视图层可直接复用。 */
 .page-container { display: flex; flex-direction: column; gap: 16px; }
 .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+
+/* 全宽容器：所有页面铺满整个屏幕宽度，仅保留舒适内边距 */
+.page-narrow,
+.page-mid { width: 100%; }
+
+/* 通用卡片 */
+.app-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+
+/* 渐变主按钮（配合 antd type=primary 之外的强调场景） */
+.btn-brand {
+  background: var(--brand-gradient);
+  border: none;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(255, 106, 0, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-brand:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(255, 106, 0, 0.36); }
+
+/* 文本强调 */
+.text-brand { color: var(--brand); }

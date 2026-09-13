@@ -56,29 +56,37 @@
 CREATE DATABASE IF NOT EXISTS campus_market DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-### 2. 启动后端
+### 2. 一键启动（推荐）
+在项目根目录执行，自动同时启动后端(8001)与前端(5174)：
 ```bash
-cd backend
-uv sync                          # 安装依赖（首次会自动下载 Python 3.12）
-uv run python scripts/seed.py    # 初始化分类/管理员/示例商品（可选）
-uv run uvicorn main:app --host 127.0.0.1 --port 8000
+python start.py            # 启动前后端；加 --seed 可先初始化示例数据
+python start.py --backend  # 只启动后端
+python start.py --frontend # 只启动前端
 ```
-后端接口文档：http://127.0.0.1:8000/api/docs
+- 前台访问：http://localhost:5174
+- 后台管理：http://localhost:5174/admin
+- 后端接口文档：http://127.0.0.1:8001/api/docs
 
-### 3. 启动前端
+### 3. 手动分开启动（可选）
 ```bash
+# 后端
+cd backend
+uv sync
+uv run uvicorn main:app --host 127.0.0.1 --port 8001
+
+# 前端（另开终端）
 cd frontend
 npm install
-npm run dev
+npm run dev    # 已在 vite.config.ts 固定端口 5174，并代理 /api 到 8001
 ```
-前台访问：http://localhost:5173 ；后台管理：http://localhost:5173/admin
+> 注意：本项目前端固定为 **5174** 端口。若本机 5173 上有其他脚手架 demo 前端在运行，请以 5174 为准，避免登错系统。
 
 ### 默认账号
-| 角色 | 用户名 | 密码 |
-|---|---|---|
-| 管理员 | admin | admin123 |
-| 卖家 | seller | 123456 |
-| 买家 | buyer | 123456 |
+| 角色 | 用户名 | 密码 | 说明 |
+|---|---|---|---|
+| 管理员 | admin | 123456 | 后台 http://localhost:5174/admin |
+| 卖家 | student1 | 123456 | 昵称：林晚晴 |
+| 买家 | student2 | 123456 | 昵称：陈屿 |
 
 ### 开启真实 AI（可选）
 默认无 Key 时 AI 走本地规则策略，功能仍可完整演示。配置大模型 Key 后即用真实模型：

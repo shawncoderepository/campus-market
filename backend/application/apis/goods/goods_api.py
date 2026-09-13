@@ -36,8 +36,11 @@ async def publish(req: PublishReq, current: User = Depends(get_current_user)) ->
 
 
 @goods_router.get("/list", response_model=BaseResponse[PageResult[GoodsItemRes]], summary="商品列表")
-async def list_goods(query: GoodsListQuery = Depends()) -> object:
-    items, total = await goods_service.list_goods(query.model_dump())
+async def list_goods(
+    query: GoodsListQuery = Depends(),
+    viewer: User | None = Depends(get_current_user_optional),
+) -> object:
+    items, total = await goods_service.list_goods(query.model_dump(), viewer)
     data = PageResult[GoodsItemRes](
         list=[GoodsItemRes(**goods_service.to_item_res(p)) for p in items],
         total=total,

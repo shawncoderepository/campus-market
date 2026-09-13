@@ -1,5 +1,6 @@
 from fastapi import APIRouter, FastAPI
 
+from application.apis.admin import admin_router
 from application.apis.ai import ai_router
 from application.apis.bargain import bargain_router
 from application.apis.category import category_router
@@ -27,6 +28,7 @@ def register_routes(app: FastAPI) -> None:
     api_router.include_router(message_router)
     api_router.include_router(report_router)
     api_router.include_router(ai_router)
+    api_router.include_router(admin_router)
     app.include_router(api_router, prefix=config.prefix)
 
 

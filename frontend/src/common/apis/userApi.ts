@@ -25,3 +25,20 @@ export function updateProfile(data: Partial<Pick<User, 'nickname' | 'avatar' | '
 export function changePassword(data: { old_password: string; new_password: string }) {
   return http.put<null>('/user/password', data)
 }
+
+export interface UserStats {
+  goods_total: number
+  goods_on_sale: number
+  goods_sold: number
+  favorite_total: number
+  order_buy_total: number
+  order_sell_total: number
+  review_received_total: number
+  avg_rating: number | null
+  user_total: number | null
+  report_pending: number | null
+}
+
+export function getMyStats() {
+  return http.get<UserStats>('/user/stats')
+}

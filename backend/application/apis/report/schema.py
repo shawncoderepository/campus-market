@@ -5,7 +5,8 @@ from application.common.schema import SnakeCaseModel
 
 class CreateReportReq(SnakeCaseModel):
     product_id: int
-    reason: str = Field(min_length=1, max_length=512)
+    reason_type: str = Field(default="other", max_length=32, description="违规类型编码")
+    reason: str = Field(default="", max_length=512, description="补充说明")
 
 
 class ReportRes(SnakeCaseModel):
@@ -14,6 +15,10 @@ class ReportRes(SnakeCaseModel):
     reporter_nickname: str
     product_id: int
     product_title: str
+    seller_id: int = 0
+    seller_nickname: str = ""
+    reason_type: str = "other"
+    reason_type_name: str = ""
     reason: str
     status: int
     handler_result: str

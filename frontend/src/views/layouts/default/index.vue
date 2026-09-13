@@ -79,7 +79,7 @@ function handleMenuClick({ key }: { key: string | number }) {
 <style scoped>
 .app-layout { min-height: 100vh; }
 .brand { height: 64px; display: flex; align-items: center; justify-content: center; gap: 10px; color: #fff; overflow: hidden; }
-.brand__mark { display: grid; flex: 0 0 auto; width: 32px; height: 32px; place-items: center; border-radius: 9px; background: #2563eb; font-weight: 800; }
+.brand__mark { display: grid; flex: 0 0 auto; width: 32px; height: 32px; place-items: center; border-radius: 9px; background: linear-gradient(135deg, #ff8a3d, #ff6a00); font-weight: 800; }
 .brand__name { white-space: nowrap; font-weight: 650; }
 .topbar { display: flex; align-items: center; justify-content: space-between; height: 64px; padding: 0 20px; background: #fff; border-bottom: 1px solid #edf0f5; }
 .topbar__toggle { font-size: 18px; }

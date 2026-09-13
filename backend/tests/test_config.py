@@ -17,7 +17,7 @@ def test_replace_env_variables_uses_value_and_default(monkeypatch) -> None:
 
 def test_default_infrastructure_config_is_present_and_disabled() -> None:
     assert config.server.host == "0.0.0.0"
-    assert config.server.port == 8000
+    assert config.server.port == 8001
     assert config.server.reload is True
     assert config.database.enabled is False
     assert config.database.backend == "mysql"

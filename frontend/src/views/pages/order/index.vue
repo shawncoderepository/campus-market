@@ -14,7 +14,7 @@ import {
   Tag as ATag,
   Textarea as ATextarea,
 } from 'ant-design-vue'
-import { cancelOrder, confirmOrder, getMyOrders, payOrder, shipOrder } from '@/common/apis/orderApi'
+import { cancelOrder, confirmOrder, getMyOrders, payOrder } from '@/common/apis/orderApi'
 import { createReview } from '@/common/apis/reviewApi'
 import type { Order } from '@/common/types/business'
 
@@ -30,8 +30,8 @@ const actionLoading = ref(false)
 
 const statusMap: Record<number, { text: string; color: string }> = {
   1: { text: '待付款', color: 'gold' },
-  2: { text: '待发货', color: 'blue' },
-  3: { text: '待收货', color: 'cyan' },
+  2: { text: '待面议', color: 'blue' },
+  3: { text: '待面议', color: 'cyan' },
   4: { text: '已完成', color: 'green' },
   5: { text: '已取消', color: 'default' },
 }
@@ -50,11 +50,10 @@ function onRoleChange() {
   void load()
 }
 
-async function doAction(order: Order, action: 'pay' | 'ship' | 'confirm' | 'cancel') {
+async function doAction(order: Order, action: 'pay' | 'confirm' | 'cancel') {
   actionLoading.value = true
   try {
     if (action === 'pay') await payOrder(order.id)
-    else if (action === 'ship') await shipOrder(order.id)
     else if (action === 'confirm') await confirmOrder(order.id)
     else await cancelOrder(order.id)
     message.success('操作成功')
@@ -88,7 +87,7 @@ onMounted(load)
 </script>
 
 <template>
-  <a-card class="order" title="我的订单">
+  <a-card class="order page-mid" title="我的订单">
     <a-tabs v-model:active-key="role" @change="onRoleChange">
       <a-tab-pane key="buyer" tab="我买入的" />
       <a-tab-pane key="seller" tab="我卖出的" />
@@ -118,7 +117,7 @@ onMounted(load)
             <a-button v-if="o.status === 1 || o.status === 2" danger size="small" :loading="actionLoading" @click="doAction(o, 'cancel')">取消</a-button>
           </template>
           <template v-else>
-            <a-button v-if="o.status === 2" type="primary" size="small" :loading="actionLoading" @click="doAction(o, 'ship')">发货</a-button>
+            <a-tag v-if="o.status === 3" color="cyan">等待买家确认收货</a-tag>
             <a-button v-if="o.status === 1 || o.status === 2" danger size="small" :loading="actionLoading" @click="doAction(o, 'cancel')">取消</a-button>
           </template>
         </div>

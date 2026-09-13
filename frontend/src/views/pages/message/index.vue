@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import {
   Avatar as AAvatar,
   Button as AButton,
@@ -50,7 +50,9 @@ async function open(conv: Conversation) {
 }
 
 async function loadConversationsOnly() {
-  conversations.value = await getConversations()
+  try {
+    conversations.value = await getConversations()
+  } catch { /* 忽略轮询失败 */ }
 }
 
 async function send() {
@@ -71,11 +73,47 @@ function scrollToBottom() {
   if (listRef.value) listRef.value.scrollTop = listRef.value.scrollHeight
 }
 
-onMounted(loadConversations)
+// 判断用户是否已滚动到底部附近（避免拉新消息时打断其翻看历史）
+function isNearBottom() {
+  if (!listRef.value) return true
+  const el = listRef.value
+  return el.scrollHeight - el.scrollTop - el.clientHeight < 80
+}
+
+// 静默刷新当前聊天：新消息自动出现，仅在贴近底部时才自动下滚
+async function refreshActiveChat() {
+  if (!active.value) return
+  try {
+    const res = await getChatHistory({ peer_id: active.value.peer_id, product_id: active.value.product_id ?? undefined, page_size: 100 })
+    if (res.list.length !== messages.value.length) {
+      const nearBottom = isNearBottom()
+      messages.value = res.list
+      if (nearBottom) {
+        await nextTick()
+        scrollToBottom()
+      }
+    }
+  } catch { /* 忽略轮询失败 */ }
+}
+
+let timer: ReturnType<typeof setInterval> | null = null
+
+onMounted(async () => {
+  await loadConversations()
+  // 轮询：会话列表与当前聊天自动更新，无需手动刷新页面
+  timer = setInterval(async () => {
+    await loadConversationsOnly().catch(() => {})
+    await refreshActiveChat()
+  }, 4000)
+})
+
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+})
 </script>
 
 <template>
-  <div class="message">
+  <div class="message page-mid">
     <a-card class="message__convs" title="会话" size="small">
       <a-spin :spinning="loading">
         <a-empty v-if="!conversations.length" description="暂无会话" />
@@ -105,8 +143,9 @@ onMounted(loadConversations)
               v-for="m in messages"
               :key="m.id"
               class="message__bubble"
-              :class="m.sender_id === myId ? 'message__bubble--me' : 'message__bubble--peer'"
+              :class="m.sender_id === myId ? 'message__bubble--me' : (m.msg_type === 2 ? 'message__bubble--system' : 'message__bubble--peer')"
             >
+              <span v-if="m.msg_type === 2 && m.sender_id !== myId" class="message__sys-badge">系统通知</span>
               {{ m.content }}
             </div>
           </div>
@@ -127,19 +166,24 @@ onMounted(loadConversations)
 </template>
 
 <style scoped>
-.message { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
-.message__convs { border-radius: 12px; max-height: 70vh; overflow-y: auto; }
+.message { display: grid; grid-template-columns: 340px 1fr; gap: 20px; flex: 1; min-height: 0; }
+.message__convs { border-radius: 12px; height: 100%; overflow-y: auto; }
 .message__conv { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; cursor: pointer; }
-.message__conv:hover { background: #f5f7fb; }
-.message__conv--active { background: #eef2ff; }
+.message__conv:hover { background: #faf7f2; }
+.message__conv--active { background: #fff1e6; }
 .message__conv-meta { flex: 1; min-width: 0; }
 .message__conv-name { font-weight: 600; font-size: 14px; }
 .message__conv-last { font-size: 12px; color: #98a2b3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .message__unread { background: #ef4444; color: #fff; font-size: 11px; padding: 1px 6px; border-radius: 10px; }
-.message__chat { border-radius: 12px; min-height: 60vh; display: flex; flex-direction: column; }
-.message__list { flex: 1; overflow-y: auto; max-height: 48vh; padding: 10px 4px; }
-.message__bubble { max-width: 70%; padding: 10px 14px; border-radius: 12px; margin-bottom: 10px; background: #f5f7fb; width: fit-content; }
-.message__bubble--me { margin-left: auto; background: #2563eb; color: #fff; }
+.message__chat { border-radius: 12px; height: 100%; display: flex; flex-direction: column; }
+.message__chat :deep(.ant-card-body) { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.message__chat :deep(.ant-spin-nested-loading),
+.message__chat :deep(.ant-spin-container) { height: 100%; display: flex; flex-direction: column; }
+.message__list { flex: 1; overflow-y: auto; padding: 10px 4px; }
+.message__bubble { max-width: 70%; padding: 10px 14px; border-radius: 12px; margin-bottom: 10px; background: #f5f0ea; width: fit-content; }
+.message__bubble--me { margin-left: auto; background: linear-gradient(135deg, #ff8a3d, #ff6a00); color: #fff; }
+.message__bubble--system { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; max-width: 88%; }
+.message__sys-badge { display: inline-block; font-size: 11px; font-weight: 700; color: #ff6a00; background: #ffedd5; border-radius: 4px; padding: 0 6px; margin-right: 6px; }
 .message__input { display: flex; gap: 10px; border-top: 1px solid #f0f2f5; padding-top: 12px; margin-top: 12px; }
 @media (max-width: 860px) { .message { grid-template-columns: 1fr; } }
 </style>

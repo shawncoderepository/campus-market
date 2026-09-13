@@ -34,8 +34,11 @@ def to_record_res(r: BargainRecord) -> dict:
     }
 
 
-async def _get_product(product_id: int) -> Product:
-    product = await Product.get_or_none(id=product_id)
+async def _get_product(product_id: int, prefetch_seller: bool = False) -> Product:
+    qs = Product.get_or_none(id=product_id)
+    if prefetch_seller:
+        qs = qs.prefetch_related("seller")
+    product = await qs
     if product is None:
         raise HttpBusinessException(HttpErrorCodeEnum.NOT_FOUND, "商品不存在")
     return product
@@ -126,7 +129,7 @@ async def respond(user: User, record_id: int, accept: bool) -> BargainRecord:
 
 async def session(user: User, product_id: int, buyer_id: int | None) -> dict:
     """获取某商品某买家的议价会话。买家看自己，卖家可指定 buyer_id。"""
-    product = await _get_product(product_id)
+    product = await _get_product(product_id, prefetch_seller=True)
     if buyer_id is None:
         buyer_id = product.seller_id if user.id != product.seller_id else user.id
         # 买家查询时 buyer_id 应为自己

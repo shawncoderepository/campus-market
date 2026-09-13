@@ -1,7 +1,8 @@
-"""订单域业务逻辑：订单状态机。
+"""订单域业务逻辑：订单状态机（校园线下面交，无物流环节）。
 
-状态：1待付款 2待发货 3待收货 4已完成 5已取消。
-流转：create(1) -> pay(2) -> ship(3) -> confirm(4)；任意阶段可 cancel(5)（部分限制）。
+状态：1待付款 2待面议 3待收货 4已完成 5已取消。
+流转：create(1) -> pay(3, 待收货/待面议) -> confirm(4)；任意阶段可 cancel(5)（部分限制）。
+说明：线下面交场景，付款后无需卖家"发货"操作，直接进入待收货，由买家确认收货完成。
 """
 import time
 import uuid
@@ -93,7 +94,8 @@ async def pay(buyer: User, order_id: int) -> Order:
         raise HttpBusinessException(HttpErrorCodeEnum.FORBIDDEN, "无权操作")
     if order.status != STATUS_PENDING_PAY:
         raise HttpBusinessException(HttpErrorCodeEnum.PARAM_INVALID, "订单状态不正确")
-    order.status = STATUS_PENDING_SHIP
+    # 线下面交：付款后直接进入待收货（待面议），等待买家确认收货
+    order.status = STATUS_PENDING_RECEIVE
     await order.save()
     return order
 

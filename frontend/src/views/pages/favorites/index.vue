@@ -32,7 +32,7 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="favorites">
+  <div class="favorites page-mid">
     <h2 class="favorites__title">我的收藏</h2>
     <a-spin :spinning="loading">
       <a-empty v-if="!favorites.length" description="还没有收藏，去首页逛逛吧" />

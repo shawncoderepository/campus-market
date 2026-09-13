@@ -8,7 +8,8 @@ class Report(OrmBaseModel):
 
     reporter = fields.ForeignKeyField("models.User", related_name="reports", description="举报人")
     product = fields.ForeignKeyField("models.Product", related_name="reports", description="被举报商品")
-    reason = fields.CharField(max_length=512, description="举报原因")
+    reason_type = fields.CharField(max_length=32, default="other", description="违规类型编码")
+    reason = fields.CharField(max_length=512, description="举报原因(补充说明)")
     status = fields.SmallIntField(default=1, description="状态 1待处理 2已处理 3已驳回")
     handler_result = fields.CharField(max_length=255, default="", description="处理结果")
 

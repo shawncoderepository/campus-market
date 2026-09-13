@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterView } from 'vue-router'
-import { App as AApp, ConfigProvider as AConfigProvider } from 'ant-design-vue'
+import { App as AApp, ConfigProvider as AConfigProvider, message } from 'ant-design-vue'
+
+// 全局消息提示时长：1 秒
+message.config({
+  duration: 1,
+  maxCount: 3,
+})
 
 const appTitle = computed(() => import.meta.env.VITE_APP_TITLE || 'OrbAI Vue Template')
 </script>
@@ -11,9 +17,12 @@ const appTitle = computed(() => import.meta.env.VITE_APP_TITLE || 'OrbAI Vue Tem
   <a-config-provider
     :theme="{
       token: {
-        colorPrimary: '#2563eb',
-        borderRadius: 8,
-        colorBgLayout: '#f5f7fb',
+        colorPrimary: '#ff6a00',
+        colorInfo: '#ff6a00',
+        colorLink: '#ff6a00',
+        borderRadius: 10,
+        colorBgLayout: '#faf7f2',
+        colorTextBase: '#2b2622',
       },
     }"
   >
@@ -21,7 +30,8 @@ const appTitle = computed(() => import.meta.env.VITE_APP_TITLE || 'OrbAI Vue Tem
       <div class="page-transition-wrap">
         <RouterView v-slot="{ Component }">
           <Transition name="page">
-            <component :is="Component" :key="$route.fullPath" />
+            <!-- key 用顶层路由路径：同一布局内切换子路由不重建布局，避免整页闪烁 -->
+            <component :is="Component" :key="$route.matched[0]?.path || $route.path" />
           </Transition>
         </RouterView>
       </div>

@@ -14,7 +14,7 @@ import {
   Textarea as ATextarea,
   Upload as AUpload,
 } from 'ant-design-vue'
-import { PlusOutlined, RobotOutlined } from '@ant-design/icons-vue'
+import { DeleteOutlined, LoadingOutlined, PlusOutlined, RobotOutlined } from '@ant-design/icons-vue'
 import { getCategories, publishGoods, uploadImage } from '@/common/apis/goodsApi'
 import { aiCopy, aiEstimate } from '@/common/apis/aiApi'
 import type { Category } from '@/common/types/business'
@@ -128,7 +128,7 @@ onMounted(loadCategories)
 </script>
 
 <template>
-  <div class="publish">
+  <div class="publish page-narrow">
     <a-card title="发布闲置" class="publish__card">
       <a-form layout="vertical">
         <!-- AI 文案助手 -->
@@ -143,20 +143,28 @@ onMounted(loadCategories)
         </div>
 
         <a-form-item label="商品图片">
-          <a-upload
-            list-type="picture-card"
-            :custom-request="customUpload"
-            :show-upload-list="false"
-            accept="image/*"
-          >
-            <div class="publish__upload-list">
-              <img v-for="(url, i) in imageUrls" :key="i" :src="url" class="publish__thumb" alt="商品图" />
-              <div class="publish__upload-btn">
-                <PlusOutlined />
-                <span>上传</span>
-              </div>
+          <div class="publish__upload-list">
+            <!-- 已上传图片卡片 -->
+            <div v-for="(url, i) in imageUrls" :key="i" class="publish__thumb-wrap">
+              <img :src="url" class="publish__thumb" alt="商品图" />
+              <span class="publish__thumb-del" @click="imageUrls.splice(i, 1)"><DeleteOutlined /></span>
             </div>
-          </a-upload>
+            <!-- 上传按钮 -->
+            <a-upload
+              :custom-request="customUpload"
+              :show-upload-list="false"
+              accept="image/*"
+              multiple
+            >
+              <div class="publish__upload-btn">
+                <LoadingOutlined v-if="uploadLoading" />
+                <template v-else>
+                  <PlusOutlined />
+                  <span>上传</span>
+                </template>
+              </div>
+            </a-upload>
+          </div>
         </a-form-item>
 
         <a-form-item label="商品标题" required>
@@ -208,15 +216,27 @@ onMounted(loadCategories)
 </template>
 
 <style scoped>
-.publish { max-width: 720px; margin: 0 auto; }
+.publish { width: 100%; max-width: 1000px; margin: 0 auto; }
 .publish__card { border-radius: 14px; }
 .publish__ai { background: linear-gradient(135deg, #eef2ff, #f5f7ff); border: 1px dashed #c7d2fe; border-radius: 12px; padding: 16px; margin-bottom: 20px; }
-.publish__ai-title { font-weight: 700; color: #4f46e5; margin-bottom: 12px; }
+.publish__ai-title { font-weight: 700; color: #ff6a00; margin-bottom: 12px; }
 .publish__ai-row { display: flex; gap: 10px; align-items: center; }
 .publish__row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .publish__col { margin-bottom: 0; }
-.publish__tip { margin: 8px 0 0; font-size: 13px; color: #4f46e5; }
+.publish__tip { margin: 8px 0 0; font-size: 13px; color: #e65c00; }
 .publish__upload-list { display: flex; gap: 10px; flex-wrap: wrap; }
-.publish__thumb { width: 86px; height: 86px; object-fit: cover; border-radius: 8px; }
-.publish__upload-btn { width: 86px; height: 86px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #98a2b3; }
+.publish__thumb-wrap { position: relative; width: 86px; height: 86px; border-radius: 8px; overflow: hidden; border: 1px solid #f0ebe3; }
+.publish__thumb { width: 100%; height: 100%; object-fit: cover; display: block; }
+.publish__thumb-del {
+  position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%;
+  background: rgba(0,0,0,0.55); color: #fff; display: grid; place-items: center;
+  font-size: 12px; cursor: pointer; opacity: 0; transition: opacity .15s;
+}
+.publish__thumb-wrap:hover .publish__thumb-del { opacity: 1; }
+.publish__upload-btn {
+  width: 86px; height: 86px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; color: #98a2b3; border: 1px dashed #d9d9d9; border-radius: 8px; cursor: pointer;
+  background: #fafafa; transition: border-color .15s;
+}
+.publish__upload-btn:hover { border-color: #ff6a00; color: #ff6a00; }
 </style>

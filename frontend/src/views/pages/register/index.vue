@@ -59,11 +59,11 @@ async function onSubmit() {
 </template>
 
 <style scoped>
-.auth { min-height: 100vh; display: grid; place-items: center; background: linear-gradient(135deg, #eef2ff 0%, #f5f7fb 100%); padding: 20px; }
-.auth__card { width: 100%; max-width: 400px; border-radius: 14px; box-shadow: 0 8px 30px rgba(37, 99, 235, 0.08); }
+.auth { min-height: 100vh; display: grid; place-items: center; background: linear-gradient(135deg, #fff1e6 0%, #faf7f2 100%); padding: 20px; }
+.auth__card { width: 100%; max-width: 400px; border-radius: 16px; box-shadow: 0 12px 40px rgba(255, 106, 0, 0.1); }
 .auth__brand { text-align: center; margin-bottom: 24px; }
-.auth__logo { display: inline-grid; width: 56px; height: 56px; place-items: center; border-radius: 14px; background: linear-gradient(135deg, #2563eb, #4f46e5); color: #fff; font-size: 28px; font-weight: 800; margin-bottom: 12px; }
+.auth__logo { display: inline-grid; width: 56px; height: 56px; place-items: center; border-radius: 16px; background: linear-gradient(135deg, #ff8a3d, #ff6a00); color: #fff; font-size: 28px; font-weight: 800; margin-bottom: 12px; box-shadow: 0 6px 16px rgba(255,106,0,0.3); }
 .auth__brand h2 { margin: 0 0 4px; font-size: 20px; }
-.auth__brand p { margin: 0; color: #98a2b3; font-size: 13px; }
+.auth__brand p { margin: 0; color: #8a8078; font-size: 13px; }
 .auth__footer { margin-top: 16px; text-align: center; }
 </style>

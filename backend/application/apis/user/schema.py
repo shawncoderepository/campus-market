@@ -45,4 +45,18 @@ class ChangePasswordReq(SnakeCaseModel):
     new_password: str = Field(min_length=6, max_length=64)
 
 
+class UserStatsRes(SnakeCaseModel):
+    goods_total: int = 0
+    goods_on_sale: int = 0
+    goods_sold: int = 0
+    favorite_total: int = 0
+    order_buy_total: int = 0
+    order_sell_total: int = 0
+    review_received_total: int = 0
+    avg_rating: float | None = None
+    # 管理员维度
+    user_total: int | None = None
+    report_pending: int | None = None
+
+
 LoginRes.model_rebuild()

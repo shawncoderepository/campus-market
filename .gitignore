@@ -20,3 +20,7 @@ backend/data/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# 内网穿透工具（本机二进制，勿提交）
+cloudflared.exe
+frpc.exe
